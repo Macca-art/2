@@ -1,32 +1,59 @@
+Để đoạn mã này có thể chạy trực tiếp và hiển thị được video hoàng hôn từ liên kết YouTube bạn cung cấp, chúng ta có một vấn đề kỹ thuật nhỏ: Thư viện <a-videosphere> của A-Frame không thể đọc trực tiếp định dạng link web của YouTube (https://youtu.be/...).
+
+Do bạn đang làm việc trên GitHub, cách tối ưu, đơn giản và ổn định nhất 100% (không lo bị trình duyệt chặn bản quyền CORS) là sử dụng file video mà bạn đã tải lên hệ thống. Tên file video xuất hiện trong kho lưu trữ của bạn là: YTSave_YouTube_Video-4k-Ultra-Canh-Hoang-Hon-Buong-Dep-_Media_7uay0tpKFkQ_003_480p.mp4.
+
+Dưới đây là toàn bộ đoạn code đã được sửa hoàn chỉnh. Tôi đã thay thế file video cũ (7900865714102.mp4) bằng chính xác tên file video hoàng hôn của bạn và điều chỉnh lại tiêu đề hiển thị:
+
+HTML
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trình phát Video 360 độ Đại Dương</title>
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Tham Quan Cảnh Hoàng Hôn Buông Đẹp Ngất Ngây 360°</title>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
-    <script src="https://unpkg.com/aframe-youtube-component@2.x.x/dist/aframe-youtube-component.min.js"></script>
-    
     <style>
-        body { margin: 0; overflow: hidden; }
-        #playButton {
-            position: absolute; z-index: 999; top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            padding: 15px 30px; background: #007bff; color: white;
-            border: none; border-radius: 5px; cursor: pointer; 
-            font-weight: bold; font-size: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        body { margin: 0; overflow: hidden; font-family: sans-serif; }
+        /* Nút bấm yêu cầu quyền cảm biến bắt buộc cho thiết bị di động */
+        #vr-btn {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 9999;
+            padding: 15px 30px;
+            background-color: #e65c00; /* Thay đổi màu cam hoàng hôn cho phù hợp */
+            color: white;
+            border: none;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+        #instruction {
+            position: fixed;
+            top: 20px;
+            width: 100%;
+            text-align: center;
+            color: white;
+            z-index: 9999;
+            font-size: 16px;
+            text-shadow: 1px 1px 4px rgba(0,0,0,0.8);
+            pointer-events: none;
         }
     </style>
 </head>
 <body>
 
-    <button id="playButton">KÍCH HOẠT XEM VIDEO 360°</button>
+    <div id="instruction">Xoay điện thoại hoặc vuốt màn hình để nhìn xung quanh 360°</div>
+    <button id="vr-btn">BẬT CẢM BIẾN & XEM VIDEO</button>
 
-    <a-scene>
+    <a-scene loading-screen="enabled: false">
         <a-assets>
-            <video id="video360" 
-                   src="https://www.youtube.com/watch?v=7uay0tpKFkQ" 
+            <video id="sunset-video" 
+                   src="YTSave_YouTube_Video-4k-Ultra-Canh-Hoang-Hon-Buong-Dep-_Media_7uay0tpKFkQ_003_480p.mp4" 
+                   preload="auto"
                    loop="true" 
                    crossorigin="anonymous" 
                    playsinline 
@@ -34,27 +61,29 @@
             </video>
         </a-assets>
 
-        <a-videosphere src="#video360" rotation="0 -90 0"></a-videosphere>
+        <a-entity camera look-controls="magicWindowTrackingEnabled: true; touchEnabled: true"></a-entity>
 
-        <a-entity camera look-controls></a-entity>
+        <a-videosphere src="#sunset-video" rotation="0 -90 0"></a-videosphere>
     </a-scene>
 
     <script>
-        const playButton = document.getElementById('playButton');
-        const video = document.getElementById('video360');
+        const playButton = document.getElementById('vr-btn');
+        const videoElement = document.getElementById('sunset-video');
 
-        playButton.addEventListener('click', function () {
-            // Phát video ngay khi người dùng nhấn nút
-            video.play();
+        playButton.addEventListener('click', function() {
+            // Phát video (vượt qua tính năng chặn tự động phát của trình duyệt)
+            videoElement.play().catch(function(error) {
+                console.log("Chờ tương tác người dùng để phát video: ", error);
+            });
 
-            // Đoạn code xử lý bản quyền cảm biến chuyển động của bạn:
+            // Yêu cầu quyền cảm biến chuyển động đối với iPhone (iOS 13 trở lên)
             if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
                 DeviceOrientationEvent.requestPermission()
                     .then(permissionState => {
                         if (permissionState === 'granted') {
                             playButton.style.display = 'none'; // Cấp quyền thành công, ẩn nút
                         } else {
-                            alert('Bạn cần cho phép quyền cảm biến chuyển động để xoay được góc nhìn đại dương!');
+                            alert('Bạn cần cho phép quyền cảm biến chuyển động để xoay được góc nhìn hoàng hôn!');
                         }
                     })
                     .catch(console.error);
