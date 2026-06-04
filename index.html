@@ -3,26 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Video 4k Ultra Cảnh Hoàng Hôn Buông Đẹp Ngất Ngây</title>
+    <title>Trình phát Video 360 độ Đại Dương</title>
     
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+    <script src="https://unpkg.com/aframe-youtube-component@2.x.x/dist/aframe-youtube-component.min.js"></script>
     
     <style>
-        body {
-            margin: 0;
-            overflow: hidden;
+        body { margin: 0; overflow: hidden; }
+        #playButton {
+            position: absolute; z-index: 999; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 15px 30px; background: #007bff; color: white;
+            border: none; border-radius: 5px; cursor: pointer; 
+            font-weight: bold; font-size: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
     </style>
 </head>
 <body>
 
+    <button id="playButton">KÍCH HOẠT XEM VIDEO 360°</button>
+
     <a-scene>
-        
         <a-assets>
             <video id="video360" 
                    src="https://www.youtube.com/watch?v=7uay0tpKFkQ" 
-                   autoplay 
-                   loop 
+                   loop="true" 
                    crossorigin="anonymous" 
                    playsinline 
                    webkit-playsinline>
@@ -32,8 +37,32 @@
         <a-videosphere src="#video360" rotation="0 -90 0"></a-videosphere>
 
         <a-entity camera look-controls></a-entity>
-
     </a-scene>
 
+    <script>
+        const playButton = document.getElementById('playButton');
+        const video = document.getElementById('video360');
+
+        playButton.addEventListener('click', function () {
+            // Phát video ngay khi người dùng nhấn nút
+            video.play();
+
+            // Đoạn code xử lý bản quyền cảm biến chuyển động của bạn:
+            if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+                DeviceOrientationEvent.requestPermission()
+                    .then(permissionState => {
+                        if (permissionState === 'granted') {
+                            playButton.style.display = 'none'; // Cấp quyền thành công, ẩn nút
+                        } else {
+                            alert('Bạn cần cho phép quyền cảm biến chuyển động để xoay được góc nhìn đại dương!');
+                        }
+                    })
+                    .catch(console.error);
+            } else {
+                // Với Android hoặc máy tính, cảm biến tự động chạy nên chỉ cần ẩn nút kích hoạt
+                playButton.style.display = 'none';
+            }
+        });
+    </script>
 </body>
 </html>
